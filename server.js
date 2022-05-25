@@ -112,6 +112,7 @@ function checkFileExistsSync(filepath) {
 
 const token = eth.contract(tokenABI).at(process.env.SUGAR_PRETZEL_ADDRESS);
 
+console.log("STARTING FOR:", process.env.SUGAR_PRETZEL_ADDRESS);
 async function makeData(toCompose, id) {
   try {
     const result = await sharp("./sugar-pretzels/classic.png")
