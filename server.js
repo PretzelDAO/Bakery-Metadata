@@ -1,4 +1,5 @@
 const express = require("express");
+var cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express();
 const port = 4000;
@@ -26,6 +27,7 @@ db.serialize(() => {
 
 // Add the bodyParser middelware to the express application
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors());
 const Eth = require("ethjs");
 const {
   buildImages,
@@ -143,6 +145,7 @@ app.get("/bakery/:tokenid", async (req, res) => {
         }
 
         const maxIndex = await token.totalSupply();
+        console.log("max id:", maxIndex);
         if (tokenid >= maxIndex[0].words[0]) {
           return res.send("Non-existent token ID");
         }
