@@ -39,11 +39,7 @@ const { uploadJsonData } = require("./uploadToIpfs");
 
 const metadatacache = new Keyv({ ttl: 3 });
 
-const eth = new Eth(
-  new Eth.HttpProvider(
-    "https://kovan.infura.io/v3/31be2774d4d5424d907d13673b7681b8"
-  )
-);
+const eth = new Eth(new Eth.HttpProvider(process.env.RPC_ENDPOINT));
 
 const tokenABI = [
   {
