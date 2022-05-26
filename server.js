@@ -180,9 +180,9 @@ app.get("/bakery/:tokenid", async (req, res) => {
             values.topping
           );
 
-          if (!checkFileExistsSync(`generated/${tokenid}.png`)) {
-            await makeData(przlprops, tokenid);
-          }
+          // if (!checkFileExistsSync(`generated/${tokenid}.png`)) {
+          await makeData(przlprops, tokenid);
+          // }
         }
         //return the cached or newly created file
         var img = fs.readFileSync(`generated/${tokenid}.png`);
@@ -215,15 +215,18 @@ app.get("/bakery/:tokenid", async (req, res) => {
           image: "data:image/png;base64," + img.toString("base64"),
         };
 
+        res.send(JSON.stringify(metadata));
+
         const { hashCID } = await uploadJsonData(JSON.stringify(metadata));
         await db.serialize(() => {
           const stmt = db.prepare("INSERT INTO ipfsmap VALUES (?,?)");
           stmt.run(hashCID, tokenid);
           stmt.finalize();
         });
+        console.log("DONE");
 
         //   res.writeHead(200, { 'Content-Type': 'application/json' })
-        res.redirect(301, "https://" + hashCID + ".ipfs.nftstorage.link");
+        // res.redirect(301, "https://" + hashCID + ".ipfs.nftstorage.link");
         //   res.send(await sharp('./sugar-pretzels/0.png'))
       }
     );
