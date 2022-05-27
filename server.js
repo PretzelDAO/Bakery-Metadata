@@ -120,7 +120,7 @@ async function makeData(toCompose, id) {
   }
 }
 
-app.get("/bakery/:tokenid", async (req, res) => {
+app.get("/sugarpretzel/:tokenid", async (req, res) => {
   let tokenid = req.params.tokenid;
   await db.serialize(() => {
     db.all(
