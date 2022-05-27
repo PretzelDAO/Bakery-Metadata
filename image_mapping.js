@@ -24,7 +24,7 @@ function camelToUnderscore(key) {
 function buildImages(bg, half, salt, coating, topping) {
   let ret = [];
   ret.push({
-    input: `./sugar-pretzels/${bg}.svg`,
+    input: `./sugar-pretzels/${bg}.png`,
     top: 0,
     left: 0,
   });
@@ -36,6 +36,15 @@ function buildImages(bg, half, salt, coating, topping) {
   });
 
   const prefix = half ? "half" : "full";
+
+  if (salt) {
+    ret.push({
+      input: `./sugar-pretzels/salt.svg`,
+      top: 0,
+      left: 0,
+    });
+  }
+
   if (coating > 0) {
     ret.push({
       input: `./sugar-pretzels/${
@@ -54,13 +63,7 @@ function buildImages(bg, half, salt, coating, topping) {
       left: 0,
     });
   }
-  if (salt) {
-    ret.push({
-      input: `./sugar-pretzels/salt.svg`,
-      top: 0,
-      left: 0,
-    });
-  }
+
   console.log("making pretzel:", ret);
   return ret;
 }
