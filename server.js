@@ -122,111 +122,115 @@ async function makeData(toCompose, id) {
 
 app.get("/sugarpretzel/:tokenid", async (req, res) => {
   let tokenid = req.params.tokenid;
-  await db.serialize(() => {
-    db.all(
-      `SELECT rowid AS id, tokenid, link FROM ipfsmap WHERE tokenid=${tokenid}`,
-      async (err, data) => {
-        if (err) {
-          console.log("Problems:", err);
-          return;
+  try {
+    await db.serialize(() => {
+      db.all(
+        `SELECT rowid AS id, tokenid, link FROM ipfsmap WHERE tokenid=${tokenid}`,
+        async (err, data) => {
+          if (err) {
+            console.log("Problems:", err);
+            return;
+          }
+          console.log("gotten", data);
+          if (data && data.length > 0) {
+            console.log("EXISTING");
+            return res.redirect(
+              301,
+              "https://" + data[data.length - 1].link + ".ipfs.nftstorage.link"
+            );
+
+            //   return res.send(data[data.length - 1].link)
+          }
+
+          const maxIndex = await token.totalSupply();
+          console.log("max id:", maxIndex);
+          if (tokenid >= maxIndex[0].words[0]) {
+            return res.send("Non-existent token ID");
+          }
+          // console.log('max:', maxIndex[0], tokenid)
+          // console.log('max index:', tokenid > maxIndex[0].words[0])
+          //   const img = readFile('') //images('sugar-pretzels/0.png')
+          //   await getMetadata()
+          console.log("TOKEN", token);
+          if (!tokenid) return res.end("Sorry, invalid tokenid");
+
+          let values;
+
+          const cached_values = await metadatacache.get(tokenid);
+          if (typeof cached_values !== "undefined") {
+            values = cached_values;
+          } else {
+            // generate pretzel
+            values = await token.pretzelData(tokenid);
+            await metadatacache.set(tokenid, values);
+            console.log(
+              "got pretzel",
+              values,
+              values["background"],
+              values.background.words[0]
+            );
+            const przlprops = buildImages(
+              values.background,
+              values.half,
+              values.salt,
+              values.coating,
+              values.topping
+            );
+
+            // if (!checkFileExistsSync(`generated/${tokenid}.png`)) {
+            await makeData(przlprops, tokenid);
+            // }
+          }
+          //return the cached or newly created file
+          var img = fs.readFileSync(`generated/${tokenid}.png`);
+          const metadata = {
+            description: "Sweet, Delicious Pretzels, sweet version.",
+            external_url: "https://pretzeldao.com",
+            name: "Sugar Pretzel #" + tokenid,
+            attributes: [
+              {
+                trait_type: "background",
+                value: values.background,
+              },
+              {
+                trait_type: "half",
+                value: values.half,
+              },
+              {
+                trait_type: "salt",
+                value: values.salt,
+              },
+              {
+                trait_type: "coating",
+                value: coatingList[values.coating],
+              },
+              {
+                trait_type: "topping",
+                value: toppingList[values.topping],
+              },
+            ],
+            image: "data:image/png;base64," + img.toString("base64"),
+          };
+
+          res.send(JSON.stringify(metadata));
+
+          const { hashCID } = await uploadJsonData(JSON.stringify(metadata));
+          await db.serialize(() => {
+            const stmt = db.prepare("INSERT INTO ipfsmap VALUES (?,?)");
+            stmt.run(hashCID, tokenid);
+            stmt.finalize();
+          });
+          console.log("DONE");
+
+          //   res.writeHead(200, { 'Content-Type': 'application/json' })
+          // res.redirect(301, "https://" + hashCID + ".ipfs.nftstorage.link");
+          //   res.send(await sharp('./sugar-pretzels/0.png'))
         }
-        console.log("gotten", data);
-        if (data && data.length > 0) {
-          console.log("EXISTING");
-          return res.redirect(
-            301,
-            "https://" + data[data.length - 1].link + ".ipfs.nftstorage.link"
-          );
-
-          //   return res.send(data[data.length - 1].link)
-        }
-
-        const maxIndex = await token.totalSupply();
-        console.log("max id:", maxIndex);
-        if (tokenid >= maxIndex[0].words[0]) {
-          return res.send("Non-existent token ID");
-        }
-        // console.log('max:', maxIndex[0], tokenid)
-        // console.log('max index:', tokenid > maxIndex[0].words[0])
-        //   const img = readFile('') //images('sugar-pretzels/0.png')
-        //   await getMetadata()
-        console.log("TOKEN", token);
-        if (!tokenid) return res.end("Sorry, invalid tokenid");
-
-        let values;
-
-        const cached_values = await metadatacache.get(tokenid);
-        if (typeof cached_values !== "undefined") {
-          values = cached_values;
-        } else {
-          // generate pretzel
-          values = await token.pretzelData(tokenid);
-          await metadatacache.set(tokenid, values);
-          console.log(
-            "got pretzel",
-            values,
-            values["background"],
-            values.background.words[0]
-          );
-          const przlprops = buildImages(
-            values.background,
-            values.half,
-            values.salt,
-            values.coating,
-            values.topping
-          );
-
-          // if (!checkFileExistsSync(`generated/${tokenid}.png`)) {
-          await makeData(przlprops, tokenid);
-          // }
-        }
-        //return the cached or newly created file
-        var img = fs.readFileSync(`generated/${tokenid}.png`);
-        const metadata = {
-          description: "Sweet, Delicious Pretzels, sweet version.",
-          external_url: "https://pretzeldao.com",
-          name: "Sugar Pretzel #" + tokenid,
-          attributes: [
-            {
-              trait_type: "background",
-              value: values.background,
-            },
-            {
-              trait_type: "half",
-              value: values.half,
-            },
-            {
-              trait_type: "salt",
-              value: values.salt,
-            },
-            {
-              trait_type: "coating",
-              value: coatingList[values.coating],
-            },
-            {
-              trait_type: "topping",
-              value: toppingList[values.topping],
-            },
-          ],
-          image: "data:image/png;base64," + img.toString("base64"),
-        };
-
-        res.send(JSON.stringify(metadata));
-
-        const { hashCID } = await uploadJsonData(JSON.stringify(metadata));
-        await db.serialize(() => {
-          const stmt = db.prepare("INSERT INTO ipfsmap VALUES (?,?)");
-          stmt.run(hashCID, tokenid);
-          stmt.finalize();
-        });
-        console.log("DONE");
-
-        //   res.writeHead(200, { 'Content-Type': 'application/json' })
-        // res.redirect(301, "https://" + hashCID + ".ipfs.nftstorage.link");
-        //   res.send(await sharp('./sugar-pretzels/0.png'))
-      }
-    );
-  });
+      );
+    });
+  } catch (e) {
+    console.log("WE BROKE!!!!", e.message);
+  }
 });
 // Set up second page
 app.get("/second", (req, res) => {
