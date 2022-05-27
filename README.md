@@ -9,6 +9,11 @@
  
 </div>
 
+## Related Repositories
+- [Frontend](https://github.com/PretzelDAO/Bakery-Frontend)
+- [Smart Contracts](https://github.com/PretzelDAO/Token-Contracts/tree/main/contracts/SugarPretzels).
+
+
 ## Why Sugar Pretzels?
 
 NFTs have, without a doubt, taken the world by storm in 2021. Whilst the UX/UI has taken major steps to making it as easy as possible for newcomers to join the NFT-craze, the overall experience can still feel disconnected.
@@ -54,7 +59,7 @@ The repository for the Smart Contracts can be found [here](https://github.com/Pr
 
 ## Metadata
 
-The metadata is generated and uploaded to IPFS via our backend service [here](https://github.com/PretzelDAO/Bakery-Metadata)
+The metadata is generated and uploaded to IPFS via our backend service [here](https://github.com/PretzelDAO/Bakery-Metadata).
 
 ### Specification
 
