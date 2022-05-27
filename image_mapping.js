@@ -24,13 +24,13 @@ function camelToUnderscore(key) {
 function buildImages(bg, half, salt, coating, topping) {
   let ret = [];
   ret.push({
-    input: `./sugar-pretzels/${bg}.png`,
+    input: `./sugar-pretzels/${bg}.svg`,
     top: 0,
     left: 0,
   });
   //quick-fix to make it possible without parsing arguments
   ret.push({
-    input: `./sugar-pretzels/classic.png`,
+    input: `./sugar-pretzels/classic.svg`,
     top: 0,
     left: 0,
   });
@@ -40,7 +40,7 @@ function buildImages(bg, half, salt, coating, topping) {
     ret.push({
       input: `./sugar-pretzels/${
         prefix + camelToUnderscore(coatingList[coating])
-      }.png`,
+      }.svg`,
       top: 0,
       left: 0,
     });
@@ -49,14 +49,14 @@ function buildImages(bg, half, salt, coating, topping) {
     ret.push({
       input: `./sugar-pretzels/${
         prefix + camelToUnderscore(topppingList[topping])
-      }.png`,
+      }.svg`,
       top: 0,
       left: 0,
     });
   }
   if (salt) {
     ret.push({
-      input: `./sugar-pretzels/salt.png`,
+      input: `./sugar-pretzels/salt.svg`,
       top: 0,
       left: 0,
     });
