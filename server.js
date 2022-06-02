@@ -27,6 +27,8 @@ db.serialize(() => {
 
 // Add the bodyParser middelware to the express application
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+
 app.use(cors());
 const Eth = require("ethjs");
 const {
@@ -94,6 +96,74 @@ const tokenABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [],
+    name: "currentConditions",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "timestamp",
+        type: "uint256",
+      },
+      {
+        internalType: "uint24",
+        name: "precipitationPast12Hours",
+        type: "uint24",
+      },
+      {
+        internalType: "uint24",
+        name: "precipitationPast24Hours",
+        type: "uint24",
+      },
+      {
+        internalType: "uint24",
+        name: "precipitationPastHour",
+        type: "uint24",
+      },
+      {
+        internalType: "uint24",
+        name: "pressure",
+        type: "uint24",
+      },
+      {
+        internalType: "int16",
+        name: "temperature",
+        type: "int16",
+      },
+      {
+        internalType: "uint16",
+        name: "windDirectionDegrees",
+        type: "uint16",
+      },
+      {
+        internalType: "uint16",
+        name: "windSpeed",
+        type: "uint16",
+      },
+      {
+        internalType: "uint8",
+        name: "precipitationType",
+        type: "uint8",
+      },
+      {
+        internalType: "uint8",
+        name: "relativeHumidity",
+        type: "uint8",
+      },
+      {
+        internalType: "uint8",
+        name: "uvIndex",
+        type: "uint8",
+      },
+      {
+        internalType: "uint8",
+        name: "weatherIcon",
+        type: "uint8",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
 ];
 
 function checkFileExistsSync(filepath) {
@@ -156,11 +226,11 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
 
           let values;
 
-          const cached = false
+          const cached = false;
           const cached_values = await metadatacache.get(tokenid);
           if (typeof cached_values !== "undefined") {
             values = cached_values;
-            cached= true
+            cached = true;
           } else {
             // generate pretzel
             values = await token.pretzelData(tokenid);
@@ -215,9 +285,9 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
           };
 
           res.send(JSON.stringify(metadata));
-          if(cached){
+          if (cached) {
             //ipfs upload most likely in progress
-            return
+            return;
           }
           const { hashCID } = await uploadJsonData(JSON.stringify(metadata));
           await db.serialize(() => {
@@ -236,6 +306,15 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
   } catch (e) {
     console.log("WE BROKE!!!!", e.message);
   }
+});
+
+app.post("/getconditions", async (req, res) => {
+  console.log("code", req.body)
+  if(req.body.code !==process.env.accesscode){
+    return res.send("Not Authenticated!")
+  }
+  const conditions = await token.currentConditions();
+  return res.send(conditions)
 });
 // Set up second page
 app.get("/second", (req, res) => {
