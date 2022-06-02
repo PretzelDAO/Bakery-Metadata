@@ -37,7 +37,7 @@ const {
 const Keyv = require("keyv");
 const { uploadJsonData } = require("./uploadToIpfs");
 
-const metadatacache = new Keyv({ ttl: 3 });
+const metadatacache = new Keyv({ ttl: 300 });
 
 const eth = new Eth(new Eth.HttpProvider(process.env.RPC_ENDPOINT));
 
@@ -156,9 +156,11 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
 
           let values;
 
+          const cached = false
           const cached_values = await metadatacache.get(tokenid);
           if (typeof cached_values !== "undefined") {
             values = cached_values;
+            cached= true
           } else {
             // generate pretzel
             values = await token.pretzelData(tokenid);
@@ -213,7 +215,10 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
           };
 
           res.send(JSON.stringify(metadata));
-
+          if(cached){
+            //ipfs upload most likely in progress
+            return
+          }
           const { hashCID } = await uploadJsonData(JSON.stringify(metadata));
           await db.serialize(() => {
             const stmt = db.prepare("INSERT INTO ipfsmap VALUES (?,?)");
