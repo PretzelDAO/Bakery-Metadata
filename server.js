@@ -37,7 +37,7 @@ const {
 const Keyv = require("keyv");
 const { uploadJsonData } = require("./uploadToIpfs");
 
-const metadatacache = new Keyv({ ttl: 300 });
+const metadatacache = new Keyv({ ttl: 8000 });
 
 const eth = new Eth(new Eth.HttpProvider(process.env.RPC_ENDPOINT));
 
