@@ -201,9 +201,8 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
             console.log("Problems:", err);
             return;
           }
-          console.log("gotten", data);
           if (data && data.length > 0) {
-            console.log("EXISTING");
+            console.log("EXISTING", tokenid);
             return res.redirect(
               301,
               "https://" + data[data.length - 1].link + ".ipfs.nftstorage.link"
@@ -234,13 +233,45 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
           } else {
             // generate pretzel
             values = await token.pretzelData(tokenid);
+
+            let valuearray = [
+              values.background,
+              values.half,
+              values.salt,
+              values.coating,
+              values.topping,
+            ].map((e) => e <= 0);
+            console.log("got pretzel for ID:", tokenid, values, valuearray);
+            if (valuearray.every((e) => e)) {
+              console.log("RPC BROKE!!!");
+              //retry
+              values = await token.pretzelData(tokenid);
+              valuearray = [
+                values.background,
+                values.half,
+                values.salt,
+                values.coating,
+                values.topping,
+              ].map((e) => e <= 0);
+              if (values.every((e) => e)) {
+                var img = fs.readFileSync(`placeholder.png`);
+                const metadata = {
+                  description: "Sweet, Delicious Pretzels, sweet version.",
+                  external_url: "https://pretzeldao.com",
+                  name: "Sugar Pretzel #" + tokenid,
+                  attributes: [
+                    {
+                      trait_type: "unrevealed",
+                      value: true,
+                    },
+                  ],
+                  image: "data:image/png;base64," + img.toString("base64"),
+                };
+
+                return res.end(JSON.stringify(metadata));
+              }
+            }
             await metadatacache.set(tokenid, values);
-            console.log(
-              "got pretzel",
-              values,
-              values["background"],
-              values.background.words[0]
-            );
             const przlprops = buildImages(
               values.background,
               values.half,
@@ -309,12 +340,12 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
 });
 
 app.post("/getconditions", async (req, res) => {
-  console.log("code", req.body)
-  if(req.body.code !==process.env.accesscode){
-    return res.send("Not Authenticated!")
+  console.log("code", req.body);
+  if (req.body.code !== process.env.accesscode) {
+    return res.send("Not Authenticated!");
   }
   const conditions = await token.currentConditions();
-  return res.send(conditions)
+  return res.send(conditions);
 });
 // Set up second page
 app.get("/second", (req, res) => {
