@@ -225,7 +225,7 @@ app.get("/sugarpretzel/:tokenid", async (req, res) => {
 
           let values;
 
-          const cached = false;
+          let cached = false;
           const cached_values = await metadatacache.get(tokenid);
           if (typeof cached_values !== "undefined") {
             values = cached_values;
