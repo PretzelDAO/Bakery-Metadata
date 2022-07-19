@@ -13,6 +13,9 @@
 - [Frontend](https://github.com/PretzelDAO/Bakery-Frontend)
 - [Smart Contracts](https://github.com/PretzelDAO/Token-Contracts/tree/main/contracts/SugarPretzels).
 
+Hosting: 
+https://dashboard.render.com/web/srv-ca75qs8ivq0c2bc0f3q0
+
 
 ## Why Sugar Pretzels?
 
